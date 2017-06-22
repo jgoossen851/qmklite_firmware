@@ -1,31 +1,31 @@
 # Quantum Mechanical Keyboard Firmware
 
-You have found the QMK Firmware documentation site. This is a keyboard firmware based on the [tmk\_keyboard firmware](http://github.com/tmk/tmk_keyboard) \([view differences](/Differences-from-TMK.md)\) with some useful features for Atmel AVR controllers, and more specifically, the [OLKB product line](http://olkb.com), the [ErgoDox EZ](http://www.ergodox-ez.com) keyboard, and the [Clueboard product line](http://clueboard.co/). It has also been ported to ARM chips using ChibiOS. You can use it to power your own hand-wired or custom keyboard PCB.
+You have found the QMK Firmware documentation site. This is a keyboard firmware based on the [tmk\_keyboard firmware](http://github.com/tmk/tmk_keyboard) \([view differences](differences_from_tmk.md)\) with some useful features for Atmel AVR controllers, and more specifically, the [OLKB product line](http://olkb.com), the [ErgoDox EZ](http://www.ergodox-ez.com) keyboard, and the [Clueboard product line](http://clueboard.co/). It has also been ported to ARM chips using ChibiOS. You can use it to power your own hand-wired or custom keyboard PCB.
 
 # Getting started
 
 Before you are able to compile, you'll need to install an environment for AVR or ARM development. You'll find the instructions for any OS below. If you find another/better way to set things up from scratch, please consider [making a pull request](https://github.com/qmk/qmk_firmware/pulls) with your changes!
 
-* [Build Environment Setup](/Build-Environment-Setup.md)
-* [QMK Overview](/QMK-Overview.md)
+* [Build Environment Setup](build_environment_setup.md)
+* [QMK Overview](qmk_overview.md)
 
 # Configuring QMK Firmware
 
-The QMK Firmware can be configured via the `keymaps` array data. For simply generating a [basic keycode](/Keycodes.md), you add it as an element of your `keymaps` array data. For more complicated actions, there are more advanced keycodes that are organized carefully to represent common operations, some of which can be found on the [Key Functions](/Key-Functions.md) page.
+The QMK Firmware can be configured via the `keymaps` array data. For simply generating a [basic keycode](keycodes.md), you add it as an element of your `keymaps` array data. For more complicated actions, there are more advanced keycodes that are organized carefully to represent common operations, some of which can be found on the [Key Functions](key_functions.md) page.
 
-For more details of the `keymaps` array, see [Keymap Overview](/Keymap.md) page.
+For more details of the `keymaps` array, see [Keymap Overview](keymap.md) page.
 
 ## Space Cadet Shift: The future, built in
 
-Steve Losh [described](http://stevelosh.com/blog/2012/10/a-modern-space-cadet/) the Space Cadet Shift quite well. Essentially, you hit the left Shift on its own, and you get an opening parenthesis; hit the right Shift on its own, and you get the closing one. When hit with other keys, the Shift key keeps working as it always does. Yes, it's as cool as it sounds. Head on over to the [Space Cadet Shift](/Space-Cadet-Shift.md) page to read about it.
+Steve Losh [described](http://stevelosh.com/blog/2012/10/a-modern-space-cadet/) the Space Cadet Shift quite well. Essentially, you hit the left Shift on its own, and you get an opening parenthesis; hit the right Shift on its own, and you get the closing one. When hit with other keys, the Shift key keeps working as it always does. Yes, it's as cool as it sounds. Head on over to the [Space Cadet Shift](space_cadet_shift.md) page to read about it.
 
 ## The Leader key: A new kind of modifier
 
-Most modifiers have to be held or toggled. But what if you had a key that indicated the start of a sequence? You could press that key and then rapidly press 1-3 more keys to trigger a macro, or enter a special layer, or anything else you might want to do. To learn more about it check out the [Leader Key](/Leader-Key.md) page.
+Most modifiers have to be held or toggled. But what if you had a key that indicated the start of a sequence? You could press that key and then rapidly press 1-3 more keys to trigger a macro, or enter a special layer, or anything else you might want to do. To learn more about it check out the [Leader Key](leader_key.md) page.
 
 ## Tap Dance: A single key can do 3, 5, or 100 different things
 
-Hit the semicolon key once, send a semicolon. Hit it twice, rapidly -- send a colon. Hit it three times, and your keyboard's LEDs do a wild dance. That's just one example of what Tap Dance can do. Read more about it on the [Tap Dance](/Tap-Dance.md) page.
+Hit the semicolon key once, send a semicolon. Hit it twice, rapidly -- send a colon. Hit it three times, and your keyboard's LEDs do a wild dance. That's just one example of what Tap Dance can do. Read more about it on the [Tap Dance](tap_dance.md) page.
 
 ## Temporarily setting the default layer
 
@@ -33,7 +33,7 @@ Hit the semicolon key once, send a semicolon. Hit it twice, rapidly -- send a co
 
 ## Macro shortcuts: Send a whole string when pressing just one key
 
-How would you like a single keypress to send a whole word, sentence, paragraph, or even document? Head on over to the [Macros](/Macros.md) page to read up on all aspects of Simple and Dynamic Macros.
+How would you like a single keypress to send a whole word, sentence, paragraph, or even document? Head on over to the [Macros](macros.md) page to read up on all aspects of Simple and Dynamic Macros.
 
 ## Additional keycode aliases for software-implemented layouts \(Colemak, Dvorak, etc\)
 
@@ -131,53 +131,4 @@ case MACRO_RAISED:
 * `BL_STEP` - steps through the backlight levels
 
 Enable the backlight from the Makefile.
-
-# Custom Quantum functions
-
-All of these functions are available in the `*_kb()` or `*_user()` variety. `kb` ones should only be used in the `<keyboard>/<keyboard>.c` file, and `user` ones should only be used in the `keymap.c`. The keyboard ones call the user ones - it's necessary to keep these calls to allow the keymap functions to work correctly.
-
-## `void matrix_init_*(void)`
-
-This function gets called when the matrix is initiated, and can contain start-up code for your keyboard/keymap.
-
-## `void matrix_scan_*(void)`
-
-This function gets called at every matrix scan, which is basically as often as the MCU can handle. Be careful what you put here, as it will get run a lot.
-
-## `bool process_record_*(uint16_t keycode, keyrecord_t *record)`
-
-This function gets called on every keypress/release, and is where you can define custom functionality. The return value is whether or not QMK should continue processing the keycode - returning `false` stops the execution.
-
-The `keycode` variable is whatever is defined in your keymap, eg `MO(1)`, `KC_L`, etc. and can be switch-cased to execute code whenever a particular code is pressed.
-
-The `record` variable contains infomation about the actual press:
-
-```
-keyrecord_t record {
-  keyevent_t event {
-    keypos_t key {
-      uint8_t col
-      uint8_t row
-    }
-    bool     pressed
-    uint16_t time
-  }
-}
-```
-
-The conditional `if (record->event.pressed)` can tell if the key is being pressed or released, and you can execute code based on that.
-
-## `void led_set_*(uint8_t usb_led)`
-
-This gets called whenever there is a state change on your host LEDs \(eg caps lock, scroll lock, etc\). The LEDs are defined as:
-
-```
-#define USB_LED_NUM_LOCK                0
-#define USB_LED_CAPS_LOCK               1
-#define USB_LED_SCROLL_LOCK             2
-#define USB_LED_COMPOSE                 3
-#define USB_LED_KANA                    4
-```
-
-and can be tested against the `usb_led` with a conditional like `if (usb_led & (1<<USB_LED_CAPS_LOCK))` - if this is true, you can turn your LED on, otherwise turn it off.
 
