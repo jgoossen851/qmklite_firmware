@@ -14,17 +14,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef QUANTUM_VISUALIZER_LCD_BACKLIGHT_KEYFRAMES_H_
-#define QUANTUM_VISUALIZER_LCD_BACKLIGHT_KEYFRAMES_H_
+#ifndef DEFAULT_ANIMATIONS_H_
+#define DEFAULT_ANIMATIONS_H_
 
 #include "visualizer.h"
 
-// Animates the LCD backlight color between the current color and the target color (of the state)
-bool backlight_keyframe_animate_color(keyframe_animation_t* animation, visualizer_state_t* state);
-// Sets the backlight color to the target color
-bool backlight_keyframe_set_color(keyframe_animation_t* animation, visualizer_state_t* state);
+// You can use these default animations, but of course you can also write your own custom ones instead
+extern keyframe_animation_t default_startup_animation;
+extern keyframe_animation_t default_suspend_animation;
 
-bool backlight_keyframe_disable(keyframe_animation_t* animation, visualizer_state_t* state);
-bool backlight_keyframe_enable(keyframe_animation_t* animation, visualizer_state_t* state);
+// An animation for testing and demonstrating the led support, should probably not be used for real world
+// cases
+extern keyframe_animation_t led_test_animation;
 
-#endif /* QUANTUM_VISUALIZER_LCD_BACKLIGHT_KEYFRAMES_H_ */
+#endif /* DEFAULT_ANIMATIONS_H_ */
