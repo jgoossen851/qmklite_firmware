@@ -1,4 +1,4 @@
-/* Copyright 2016 Jack Humbert
+/* Copyright 2018 Jack Humbert <jack.humb@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,20 +13,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#pragma once
 
-#ifndef PROCESS_CHORDING_H
-#define PROCESS_CHORDING_H
+#include "i2c_master.h"
 
-#include "quantum.h"
-
-// Chording stuff
-#define CHORDING_MAX 4
-bool chording = false;
-
-uint8_t chord_keys[CHORDING_MAX] = {0};
-uint8_t chord_key_count = 0;
-uint8_t chord_key_down = 0;
-
-bool process_chording(uint16_t keycode, keyrecord_t *record);
-
+#ifdef QWIIC_JOYSTIIC_ENABLE
+  #include "joystiic.h"
 #endif
+#ifdef QWIIC_MICRO_OLED_ENABLE
+  #include "micro_oled.h"
+#endif
+
+void qwiic_init(void);
+void qwiic_task(void);
