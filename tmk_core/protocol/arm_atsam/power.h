@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Massdrop Inc.
+Copyright 2019 Massdrop Inc.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,11 +15,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _MAIN_ARM_ATSAM_H_
-#define _MAIN_ARM_ATSAM_H_
+#pragma once
 
-#define COMPILE_VERSION "VER "__DATE__" "__TIME__" [" QMK_KEYBOARD ":" QMK_KEYMAP "]\n\r"
+#define POWER_5V_SPIKE_TESTS    3   //Number of tests to do when a catastrophic spike is detected, to determine if it is a sustained event
 
-uint8_t keyboard_leds(void);
-
-#endif //_MAIN_ARM_ATSAM_H_
+uint8_t power_5v_check(void);
+void power_init(void);
+void power_run(void);
