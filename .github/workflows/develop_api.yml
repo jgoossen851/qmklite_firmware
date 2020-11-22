@@ -1,9 +1,9 @@
-name: Update API Data
+name: Update Develop API Data
 
 on:
   push:
     branches:
-    - master
+    - develop
     paths:
     - 'keyboards/**'
     - 'layouts/community/**'
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     container: qmkfm/base_container
 
-    # protect against those who develop with their fork on master
+    # protect against those who work in their fork on develop
     if: github.repository == 'qmk/qmk_firmware'
 
     steps:
@@ -38,5 +38,5 @@ jobs:
         FOLDER: api_data/v1
         CLEAN: true
         GIT_CONFIG_EMAIL: hello@qmk.fm
-        REPOSITORY_NAME: qmk/qmk_keyboards
+        REPOSITORY_NAME: qmk/qmk_keyboards_devel
         TARGET_FOLDER: v1
