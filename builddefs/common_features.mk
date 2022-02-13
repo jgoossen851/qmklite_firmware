@@ -109,10 +109,9 @@ ifeq ($(strip $(MOUSEKEY_ENABLE)), yes)
 endif
 
 VALID_POINTING_DEVICE_DRIVER_TYPES := adns5050 adns9800 analog_joystick cirque_pinnacle_i2c cirque_pinnacle_spi pmw3360 pmw3389 pimoroni_trackball custom
-POINTING_DEVICE_DRIVER ?= custom
 ifeq ($(strip $(POINTING_DEVICE_ENABLE)), yes)
     ifeq ($(filter $(POINTING_DEVICE_DRIVER),$(VALID_POINTING_DEVICE_DRIVER_TYPES)),)
-        $(error POINTING_DEVICE_DRIVER="$(POINTING_DEVICE_DRIVER)" is not a valid pointing device type)
+        $(call CATASTROPHIC_ERROR,Invalid POINTING_DEVICE_DRIVER,POINTING_DEVICE_DRIVER="$(POINTING_DEVICE_DRIVER)" is not a valid pointing device type)
     else
         OPT_DEFS += -DPOINTING_DEVICE_ENABLE
         MOUSE_ENABLE := yes
@@ -153,7 +152,7 @@ endif
 VALID_EEPROM_DRIVER_TYPES := vendor custom transient i2c spi
 EEPROM_DRIVER ?= vendor
 ifeq ($(filter $(EEPROM_DRIVER),$(VALID_EEPROM_DRIVER_TYPES)),)
-  $(error EEPROM_DRIVER="$(EEPROM_DRIVER)" is not a valid EEPROM driver)
+  $(call CATASTROPHIC_ERROR,Invalid EEPROM_DRIVER,EEPROM_DRIVER="$(EEPROM_DRIVER)" is not a valid EEPROM driver)
 else
   OPT_DEFS += -DEEPROM_ENABLE
   ifeq ($(strip $(EEPROM_DRIVER)), custom)
@@ -220,6 +219,21 @@ else
   endif
 endif
 
+VALID_FLASH_DRIVER_TYPES := spi
+FLASH_DRIVER ?= no
+ifneq ($(strip $(FLASH_DRIVER)), no)
+    ifeq ($(filter $(FLASH_DRIVER),$(VALID_FLASH_DRIVER_TYPES)),)
+        $(error FLASH_DRIVER="$(FLASH_DRIVER)" is not a valid FLASH driver)
+    else
+        OPT_DEFS += -DFLASH_ENABLE
+        ifeq ($(strip $(FLASH_DRIVER)), spi)
+            OPT_DEFS += -DFLASH_DRIVER -DFLASH_SPI
+            COMMON_VPATH += $(DRIVER_PATH)/flash
+            SRC += flash_spi.c
+        endif
+    endif
+endif
+
 RGBLIGHT_ENABLE ?= no
 VALID_RGBLIGHT_TYPES := WS2812 APA102 custom
 
@@ -231,7 +245,7 @@ ifeq ($(strip $(RGBLIGHT_ENABLE)), yes)
     RGBLIGHT_DRIVER ?= WS2812
 
     ifeq ($(filter $(RGBLIGHT_DRIVER),$(VALID_RGBLIGHT_TYPES)),)
-        $(error RGBLIGHT_DRIVER="$(RGBLIGHT_DRIVER)" is not a valid RGB type)
+        $(call CATASTROPHIC_ERROR,Invalid RGBLIGHT_DRIVER,RGBLIGHT_DRIVER="$(RGBLIGHT_DRIVER)" is not a valid RGB type)
     else
         COMMON_VPATH += $(QUANTUM_DIR)/rgblight
         POST_CONFIG_H += $(QUANTUM_DIR)/rgblight/rgblight_post_config.h
@@ -256,12 +270,12 @@ ifeq ($(strip $(RGBLIGHT_ENABLE)), yes)
 endif
 
 LED_MATRIX_ENABLE ?= no
-VALID_LED_MATRIX_TYPES := IS31FL3731 custom
+VALID_LED_MATRIX_TYPES := IS31FL3731 IS31FL3742A IS31FL3743A IS31FL3745 IS31FL3746A custom
 # TODO: IS31FL3733 IS31FL3737 IS31FL3741
 
 ifeq ($(strip $(LED_MATRIX_ENABLE)), yes)
     ifeq ($(filter $(LED_MATRIX_DRIVER),$(VALID_LED_MATRIX_TYPES)),)
-        $(error "$(LED_MATRIX_DRIVER)" is not a valid matrix type)
+        $(call CATASTROPHIC_ERROR,Invalid LED_MATRIX_DRIVER,LED_MATRIX_DRIVER="$(LED_MATRIX_DRIVER)" is not a valid matrix type)
     endif
     OPT_DEFS += -DLED_MATRIX_ENABLE
 ifneq (,$(filter $(MCU), atmega16u2 atmega32u2 at90usb162))
@@ -283,14 +297,43 @@ endif
         SRC += is31fl3731-simple.c
         QUANTUM_LIB_SRC += i2c_master.c
     endif
+
+	ifeq ($(strip $(LED_MATRIX_DRIVER)), IS31FL3742A)
+        OPT_DEFS += -DIS31FLCOMMON -DIS31FL3742A -DSTM32_I2C -DHAL_USE_I2C=TRUE
+        COMMON_VPATH += $(DRIVER_PATH)/led/issi
+        SRC += is31flcommon.c
+        QUANTUM_LIB_SRC += i2c_master.c
+    endif
+
+	ifeq ($(strip $(LED_MATRIX_DRIVER)), IS31FL3743A)
+        OPT_DEFS += -DIS31FLCOMMON -DIS31FL3743A -DSTM32_I2C -DHAL_USE_I2C=TRUE
+        COMMON_VPATH += $(DRIVER_PATH)/led/issi
+        SRC += is31flcommon.c
+        QUANTUM_LIB_SRC += i2c_master.c
+    endif
+
+	ifeq ($(strip $(LED_MATRIX_DRIVER)), IS31FL3745)
+        OPT_DEFS += -DIS31FLCOMMON -DIS31FL3745 -DSTM32_I2C -DHAL_USE_I2C=TRUE
+        COMMON_VPATH += $(DRIVER_PATH)/led/issi
+        SRC += is31flcommon.c
+        QUANTUM_LIB_SRC += i2c_master.c
+    endif
+
+	ifeq ($(strip $(LED_MATRIX_DRIVER)), IS31FL3746A)
+        OPT_DEFS += -DIS31FLCOMMON -DIS31FL3746A -DSTM32_I2C -DHAL_USE_I2C=TRUE
+        COMMON_VPATH += $(DRIVER_PATH)/led/issi
+        SRC += is31flcommon.c
+        QUANTUM_LIB_SRC += i2c_master.c
+    endif
+
 endif
 
 RGB_MATRIX_ENABLE ?= no
-VALID_RGB_MATRIX_TYPES := AW20216 IS31FL3731 IS31FL3733 IS31FL3737 IS31FL3741 CKLED2001 WS2812 custom
 
+VALID_RGB_MATRIX_TYPES := AW20216 IS31FL3731 IS31FL3733 IS31FL3737 IS31FL3741 IS31FL3742A IS31FL3743A IS31FL3745 IS31FL3746A CKLED2001 WS2812 custom
 ifeq ($(strip $(RGB_MATRIX_ENABLE)), yes)
     ifeq ($(filter $(RGB_MATRIX_DRIVER),$(VALID_RGB_MATRIX_TYPES)),)
-        $(error "$(RGB_MATRIX_DRIVER)" is not a valid matrix type)
+        $(call CATASTROPHIC_ERROR,Invalid RGB_MATRIX_DRIVER,RGB_MATRIX_DRIVER="$(RGB_MATRIX_DRIVER)" is not a valid matrix type)
     endif
     OPT_DEFS += -DRGB_MATRIX_ENABLE
 ifneq (,$(filter $(MCU), atmega16u2 atmega32u2 at90usb162))
@@ -339,6 +382,34 @@ endif
         OPT_DEFS += -DIS31FL3741 -DSTM32_I2C -DHAL_USE_I2C=TRUE
         COMMON_VPATH += $(DRIVER_PATH)/led/issi
         SRC += is31fl3741.c
+        QUANTUM_LIB_SRC += i2c_master.c
+    endif
+
+	ifeq ($(strip $(RGB_MATRIX_DRIVER)), IS31FL3742A)
+        OPT_DEFS += -DIS31FLCOMMON -DIS31FL3742A -DSTM32_I2C -DHAL_USE_I2C=TRUE
+        COMMON_VPATH += $(DRIVER_PATH)/led/issi
+        SRC += is31flcommon.c
+        QUANTUM_LIB_SRC += i2c_master.c
+    endif
+
+	ifeq ($(strip $(RGB_MATRIX_DRIVER)), IS31FL3743A)
+        OPT_DEFS += -DIS31FLCOMMON -DIS31FL3743A -DSTM32_I2C -DHAL_USE_I2C=TRUE
+        COMMON_VPATH += $(DRIVER_PATH)/led/issi
+        SRC += is31flcommon.c
+        QUANTUM_LIB_SRC += i2c_master.c
+    endif
+
+	ifeq ($(strip $(RGB_MATRIX_DRIVER)), IS31FL3745)
+        OPT_DEFS += -DIS31FLCOMMON -DIS31FL3745 -DSTM32_I2C -DHAL_USE_I2C=TRUE
+        COMMON_VPATH += $(DRIVER_PATH)/led/issi
+        SRC += is31flcommon.c
+        QUANTUM_LIB_SRC += i2c_master.c
+    endif
+
+	ifeq ($(strip $(RGB_MATRIX_DRIVER)), IS31FL3746A)
+        OPT_DEFS += -DIS31FLCOMMON -DIS31FL3746A -DSTM32_I2C -DHAL_USE_I2C=TRUE
+        COMMON_VPATH += $(DRIVER_PATH)/led/issi
+        SRC += is31flcommon.c
         QUANTUM_LIB_SRC += i2c_master.c
     endif
 
@@ -404,7 +475,7 @@ else
 endif
 ifeq ($(strip $(BACKLIGHT_ENABLE)), yes)
     ifeq ($(filter $(BACKLIGHT_DRIVER),$(VALID_BACKLIGHT_TYPES)),)
-        $(error BACKLIGHT_DRIVER="$(BACKLIGHT_DRIVER)" is not a valid backlight type)
+        $(call CATASTROPHIC_ERROR,Invalid BACKLIGHT_DRIVER,BACKLIGHT_DRIVER="$(BACKLIGHT_DRIVER)" is not a valid backlight type)
     endif
 
     COMMON_VPATH += $(QUANTUM_DIR)/backlight
@@ -429,7 +500,7 @@ VALID_WS2812_DRIVER_TYPES := bitbang pwm spi i2c
 WS2812_DRIVER ?= bitbang
 ifeq ($(strip $(WS2812_DRIVER_REQUIRED)), yes)
     ifeq ($(filter $(WS2812_DRIVER),$(VALID_WS2812_DRIVER_TYPES)),)
-        $(error WS2812_DRIVER="$(WS2812_DRIVER)" is not a valid WS2812 driver)
+        $(call CATASTROPHIC_ERROR,Invalid WS2812_DRIVER,WS2812_DRIVER="$(WS2812_DRIVER)" is not a valid WS2812 driver)
     endif
 
     OPT_DEFS += -DWS2812_DRIVER_$(strip $(shell echo $(WS2812_DRIVER) | tr '[:lower:]' '[:upper:]'))
@@ -484,7 +555,7 @@ VALID_MAGIC_TYPES := yes
 BOOTMAGIC_ENABLE ?= no
 ifneq ($(strip $(BOOTMAGIC_ENABLE)), no)
   ifeq ($(filter $(BOOTMAGIC_ENABLE),$(VALID_MAGIC_TYPES)),)
-    $(error BOOTMAGIC_ENABLE="$(BOOTMAGIC_ENABLE)" is not a valid type of magic)
+    $(call CATASTROPHIC_ERROR,Invalid BOOTMAGIC_ENABLE,BOOTMAGIC_ENABLE="$(BOOTMAGIC_ENABLE)" is not a valid type of magic)
   endif
   ifneq ($(strip $(BOOTMAGIC_ENABLE)), no)
       OPT_DEFS += -DBOOTMAGIC_LITE
@@ -500,7 +571,7 @@ CUSTOM_MATRIX ?= no
 
 ifneq ($(strip $(CUSTOM_MATRIX)), yes)
     ifeq ($(filter $(CUSTOM_MATRIX),$(VALID_CUSTOM_MATRIX_TYPES)),)
-        $(error CUSTOM_MATRIX="$(CUSTOM_MATRIX)" is not a valid custom matrix type)
+        $(call CATASTROPHIC_ERROR,Invalid CUSTOM_MATRIX,CUSTOM_MATRIX="$(CUSTOM_MATRIX)" is not a valid custom matrix type)
     endif
 
     # Include common stuff for all non custom matrix users
@@ -583,7 +654,7 @@ VALID_OLED_DRIVER_TYPES := SSD1306 custom
 OLED_DRIVER ?= SSD1306
 ifeq ($(strip $(OLED_ENABLE)), yes)
     ifeq ($(filter $(OLED_DRIVER),$(VALID_OLED_DRIVER_TYPES)),)
-        $(error OLED_DRIVER="$(OLED_DRIVER)" is not a valid OLED driver)
+        $(call CATASTROPHIC_ERROR,Invalid OLED_DRIVER,OLED_DRIVER="$(OLED_DRIVER)" is not a valid OLED driver)
     else
         OPT_DEFS += -DOLED_ENABLE
         COMMON_VPATH += $(DRIVER_PATH)/oled
@@ -651,7 +722,7 @@ endif
 ifeq ($(strip $(PS2_USE_BUSYWAIT)), yes)
     PS2_ENABLE := yes
     SRC += ps2_busywait.c
-    SRC += ps2_io_avr.c
+    SRC += ps2_io.c
     OPT_DEFS += -DPS2_USE_BUSYWAIT
 endif
 
@@ -680,7 +751,7 @@ VALID_JOYSTICK_TYPES := analog digital
 JOYSTICK_DRIVER ?= analog
 ifeq ($(strip $(JOYSTICK_ENABLE)), yes)
     ifeq ($(filter $(JOYSTICK_DRIVER),$(VALID_JOYSTICK_TYPES)),)
-        $(error "$(JOYSTICK_DRIVER)" is not a valid joystick driver)
+        $(call CATASTROPHIC_ERROR,Invalid JOYSTICK_DRIVER,JOYSTICK_DRIVER="$(JOYSTICK_DRIVER)" is not a valid joystick driver)
     endif
     OPT_DEFS += -DJOYSTICK_ENABLE
     SRC += $(QUANTUM_DIR)/process_keycode/process_joystick.c
@@ -700,7 +771,7 @@ VALID_USBPD_DRIVER_TYPES = custom vendor
 USBPD_DRIVER ?= vendor
 ifeq ($(strip $(USBPD_ENABLE)), yes)
     ifeq ($(filter $(strip $(USBPD_DRIVER)),$(VALID_USBPD_DRIVER_TYPES)),)
-        $(error USBPD_DRIVER="$(USBPD_DRIVER)" is not a valid USBPD driver)
+        $(call CATASTROPHIC_ERROR,Invalid USBPD_DRIVER,USBPD_DRIVER="$(USBPD_DRIVER)" is not a valid USBPD driver)
     else
         OPT_DEFS += -DUSBPD_ENABLE
         ifeq ($(strip $(USBPD_DRIVER)), vendor)
@@ -710,7 +781,7 @@ ifeq ($(strip $(USBPD_ENABLE)), yes)
                 OPT_DEFS += -DUSBPD_STM32G4
                 SRC += usbpd_stm32g4.c
             else
-                $(error There is no vendor-provided USBPD driver available)
+                $(call CATASTROPHIC_ERROR,Invalid USBPD_DRIVER,There is no vendor-provided USBPD driver available)
             endif
         else ifeq ($(strip $(USBPD_DRIVER)), custom)
             OPT_DEFS += -DUSBPD_CUSTOM
@@ -735,7 +806,7 @@ BLUETOOTH_ENABLE ?= no
 VALID_BLUETOOTH_DRIVER_TYPES := BluefruitLE RN42 custom
 ifeq ($(strip $(BLUETOOTH_ENABLE)), yes)
     ifeq ($(filter $(strip $(BLUETOOTH_DRIVER)),$(VALID_BLUETOOTH_DRIVER_TYPES)),)
-        $(error "$(BLUETOOTH_DRIVER)" is not a valid Bluetooth driver type)
+        $(call CATASTROPHIC_ERROR,Invalid BLUETOOTH_DRIVER,BLUETOOTH_DRIVER="$(BLUETOOTH_DRIVER)" is not a valid Bluetooth driver type)
     endif
     OPT_DEFS += -DBLUETOOTH_ENABLE
     NO_USB_STARTUP_CHECK := yes
