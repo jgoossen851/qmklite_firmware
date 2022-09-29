@@ -1,4 +1,5 @@
-/* Copyright 2022
+/*
+ * Copyright 2022
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +18,35 @@
 #pragma once
 
 #include <stdint.h>
-#include "quantum.h"
+#include "report.h"
 
-bool process_joystick(uint16_t keycode, keyrecord_t *record);
+/**
+ * \brief Initialize the Bluetooth system.
+ */
+void bluetooth_init(void);
+
+/**
+ * \brief Perform housekeeping tasks.
+ */
+void bluetooth_task(void);
+
+/**
+ * \brief Send a keyboard report.
+ *
+ * \param report The keyboard report to send.
+ */
+void bluetooth_send_keyboard(report_keyboard_t *report);
+
+/**
+ * \brief Send a mouse report.
+ *
+ * \param report The mouse report to send.
+ */
+void bluetooth_send_mouse(report_mouse_t *report);
+
+/**
+ * \brief Send a consumer usage.
+ *
+ * \param usage The consumer usage to send.
+ */
+void bluetooth_send_consumer(uint16_t usage);
